@@ -2,6 +2,8 @@ import requests
 import json
 import win32com.client as wincom
 import time
+import speech_recognition as sr
+import pyaudio
 
 def TTS(day, condition, temp, feels_temp):
     speak = wincom.Dispatch("SAPI.SpVoice")
@@ -16,12 +18,24 @@ def TTS(day, condition, temp, feels_temp):
     text2 = "Hope you have a great day ahead"
     speak.Speak(text2)
 
+def MicroInput():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+    try:
+        print("Recognizing...")    
+        city = r.recognize_google(audio, language='en-in')
+        print(f"Selected city: {city}\n") 
+    except Exception as e:
+        print("Say that again please...") 
+        return "None"
+    return city
 
 def GetWeather():
+    city = MicroInput().lower
     api_key = "c858a7a32aba4e299dd182249231410"
-    # city = input("Enter the name of City: ")
-    # city.lower()
-    city = "Jaipur"
     url = f"http://api.weatherapi.com/v1/current.json?key={api_key} &q={city}&aqi=no"
     response = requests.get(url)
     data = json.loads(response.text)
